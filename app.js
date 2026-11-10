@@ -671,7 +671,8 @@ function renderMembers(){
   if (!S.customersLoaded) { ch.innerHTML = ''; box.innerHTML = `<div class="list"><div class="empty">${T('loadingList')}</div></div>`; return; }
   const all = S.customers, m = new Date().getMonth() + 1;
   const bdays = all.filter(c => bdayMonth(c) === m).sort((a, b) => a.bday.localeCompare(b.bday));
-  ch.innerHTML = `<button type="button" class="chip" data-f="all" aria-pressed="${S.mFilter === 'all'}">${T('fAll', {n: all.length})}</button><button type="button" class="chip" data-f="bday" aria-pressed="${S.mFilter === 'bday'}">${T('fBday', {n: bdays.length})}</button>${S.mFilter === 'bday' && bdays.length ? `<button type="button" class="btn small" id="copyBtn">${T('copyList')}</button>` : ''}`;
+  ch.innerHTML = `<button type="button" class="chip" data-f="all" aria-pressed="${S.mFilter === 'all'}">${T('fAll', {n: all.length})}</button><button type="button" class="chip" data-f="bday" aria-pressed="${S.mFilter === 'bday'}">${T('fBday', {n: bdays.length})}</button><button type="button" class="chip" data-f="rank" aria-pressed="${S.mFilter === 'rank'}">${T('fRank')}</button>${S.mFilter === 'bday' && bdays.length ? `<button type="button" class="btn small" id="copyBtn">${T('copyList')}</button>` : ''}`;
+  if (S.mFilter === 'rank') { renderRanking(all, box); return; }
   let rows = S.mFilter === 'bday' ? bdays : all;
   const qs = S.mQuery.trim().toLowerCase(), qd = digits(qs);
   if (qs) rows = rows.filter(c => String(c.name || '').toLowerCase().includes(qs) || (qd && String(c.phone).includes(qd)));
@@ -680,6 +681,27 @@ function renderMembers(){
   if (!rows.length) { box.innerHTML = `<div class="list"><div class="empty">${T('noMatch')}</div></div>`; return; }
   box.innerHTML = `<div class="list"><div class="mrow mhead"><span>${T('colName')}</span><span>${T('colPts')}</span><span>${T('colBday')}</span><span>${T('colLast')}</span></div>${rows.map(mRow).join('')}</div>`;
   const cb = $('copyBtn'); if (cb) cb.onclick = () => copyList(bdays);
+}
+/* 消费排名：按累计实付金额，金额一样的名次相同 */
+function renderRanking(all, box){
+  if (S.listErr) { box.innerHTML = `<div class="list"><div class="empty">${T('netErr')}</div></div>`; return; }
+  const ranked = all.filter(c => c.totalSpent > 0).sort((a, b) => b.totalSpent - a.totalSpent || b.visits - a.visits || String(a.name).localeCompare(String(b.name)));
+  if (!ranked.length) { box.innerHTML = `<div class="list"><div class="empty">${T('rankEmpty')}</div></div>`; return; }
+  ranked.forEach((c, i) => { c._rank = i > 0 && ranked[i - 1].totalSpent === c.totalSpent ? ranked[i - 1]._rank : i + 1; });
+  let rows = ranked;
+  const qs = S.mQuery.trim().toLowerCase(), qd = digits(qs);
+  if (qs) rows = rows.filter(c => String(c.name || '').toLowerCase().includes(qs) || (qd && String(c.phone).includes(qd)));
+  if (!rows.length) { box.innerHTML = `<p class="fine rank-note">${T('rankNote')}</p><div class="list"><div class="empty">${T('noMatch')}</div></div>`; return; }
+  box.innerHTML = `<p class="fine rank-note">${T('rankNote')}</p><div class="list rank-list"><div class="mrow rrow mhead"><span>${T('colRank')}</span><span>${T('colName')}</span><span class="r-num">${T('colSpent')}</span><span class="r-num">${T('colVisits')}</span></div>${rows.map(rRow).join('')}</div>`;
+}
+function rRow(c){
+  const r = c._rank, avg = c.visits > 0 ? Math.round(c.totalSpent / c.visits) : 0;
+  return `<button type="button" class="mrow rrow" data-phone="${esc(c.phone)}">
+    <span class="rk${r <= 3 ? ' top' + r : ''}">${fmtInt(r)}</span>
+    <span class="c-name"><span class="nm">${esc(c.name)}</span><span class="ph">${esc(fmtPhone(c.phone))}</span><span class="sub-n">${esc(t('visits', {n: fmtInt(c.visits)}))}${avg ? ' · ' + esc(t('rAvg', {v: fmtB(avg)})) : ''}</span></span>
+    <span class="r-num r-spent">${esc(fmtB(c.totalSpent))}</span>
+    <span class="r-num r-visits">${fmtInt(c.visits)}${avg ? `<small>${esc(t('rAvg', {v: fmtB(avg)}))}</small>` : ''}</span>
+  </button>`;
 }
 function mRow(c){
   const bm = isBdayMonth(c), used = bdayUsedThisYear(c), bd = c.bday ? fmtBday(c.bday) : '—', lv = fmtDate(c.lastVisit);
