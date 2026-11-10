@@ -234,7 +234,6 @@ button.mrow:hover{background:var(--surface-2)}
   .c-name .sub-n{display:block}
 }
 .empty{padding:28px 20px;text-align:center;color:var(--ink-3)}
-.copy-fallback{width:100%;min-height:120px;margin-bottom:12px;font-family:var(--f-mono);font-size:.85rem}
 
 /* Settings */
 .lockbar{margin-bottom:16px;display:grid;gap:12px}
@@ -293,8 +292,9 @@ body:not([data-phase="app"]) .top{justify-content:flex-end}
 .btn.ghost{background:var(--glass);border-color:var(--glass-edge)}
 
 /* 页签 */
-.tabs{border-bottom:1px solid rgba(58,40,32,.2);gap:22px}
-.tab{padding:10px 2px 12px;font-family:var(--f-body);font-weight:500;font-size:1rem;letter-spacing:.05em;color:var(--ink-2);border-bottom-width:2px}
+.tabs{border-bottom:1px solid rgba(58,40,32,.2);gap:22px;overflow-y:hidden;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 2px 12px;margin-bottom:0;font-family:var(--f-body);font-weight:500;font-size:1rem;letter-spacing:.05em;color:var(--ink-2);border-bottom-width:2px}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 
@@ -504,7 +504,6 @@ button.mrow:hover{background:rgba(255,253,250,.7)}
         <input class="inp" id="mSearch" type="search" autocomplete="off" data-i18n-ph="searchPh">
         <div class="chips" id="chips"></div>
       </div>
-      <textarea class="inp copy-fallback" id="copyFallback" readonly hidden></textarea>
       <div id="mList"></div>
     </section>
 

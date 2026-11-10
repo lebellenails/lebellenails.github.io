@@ -671,7 +671,7 @@ function renderMembers(){
   if (!S.customersLoaded) { ch.innerHTML = ''; box.innerHTML = `<div class="list"><div class="empty">${T('loadingList')}</div></div>`; return; }
   const all = S.customers, m = new Date().getMonth() + 1;
   const bdays = all.filter(c => bdayMonth(c) === m).sort((a, b) => a.bday.localeCompare(b.bday));
-  ch.innerHTML = `<button type="button" class="chip" data-f="all" aria-pressed="${S.mFilter === 'all'}">${T('fAll', {n: all.length})}</button><button type="button" class="chip" data-f="bday" aria-pressed="${S.mFilter === 'bday'}">${T('fBday', {n: bdays.length})}</button><button type="button" class="chip" data-f="rank" aria-pressed="${S.mFilter === 'rank'}">${T('fRank')}</button>${S.mFilter === 'bday' && bdays.length ? `<button type="button" class="btn small" id="copyBtn">${T('copyList')}</button>` : ''}`;
+  ch.innerHTML = `<button type="button" class="chip" data-f="all" aria-pressed="${S.mFilter === 'all'}">${T('fAll', {n: all.length})}</button><button type="button" class="chip" data-f="bday" aria-pressed="${S.mFilter === 'bday'}">${T('fBday', {n: bdays.length})}</button><button type="button" class="chip" data-f="rank" aria-pressed="${S.mFilter === 'rank'}">${T('fRank')}</button>`;
   if (S.mFilter === 'rank') { renderRanking(all, box); return; }
   let rows = S.mFilter === 'bday' ? bdays : all;
   const qs = S.mQuery.trim().toLowerCase(), qd = digits(qs);
@@ -680,7 +680,6 @@ function renderMembers(){
   if (!all.length) { box.innerHTML = `<div class="list"><div class="empty">${T('emptyMembers')}</div></div>`; return; }
   if (!rows.length) { box.innerHTML = `<div class="list"><div class="empty">${T('noMatch')}</div></div>`; return; }
   box.innerHTML = `<div class="list"><div class="mrow mhead"><span>${T('colName')}</span><span>${T('colPts')}</span><span>${T('colBday')}</span><span>${T('colLast')}</span></div>${rows.map(mRow).join('')}</div>`;
-  const cb = $('copyBtn'); if (cb) cb.onclick = () => copyList(bdays);
 }
 /* 消费排名：按累计实付金额，金额一样的名次相同 */
 function renderRanking(all, box){
@@ -711,12 +710,6 @@ function mRow(c){
     <span class="c-bday">${esc(bd)}</span>
     <span class="c-last">${esc(lv)}</span>
   </button>`;
-}
-function copyList(rows){
-  const text = rows.map(c => `${c.name}\t${fmtPhone(c.phone)}\t${fmtBday(c.bday)}`).join('\n');
-  const fb = $('copyFallback');
-  const fallback = () => { fb.hidden = false; fb.value = text; fb.focus(); fb.select(); toast(t('copyFail'), true); };
-  try { navigator.clipboard.writeText(text).then(() => { fb.hidden = true; toast(t('copied')); }, fallback); } catch (e) { fallback(); }
 }
 
 /* ---------- summary (营业概况) ---------- */
@@ -990,7 +983,7 @@ function wireStatic(){
     const tb = e.target.closest('[data-tab]'); if (tb) { setTab(tb.dataset.tab); return; }
     const rc = e.target.closest('.qitem,.led'); if (rc) { setTab('counter'); doLookup(rc.dataset.phone); window.scrollTo(0, 0); return; }
     const mr = e.target.closest('button.mrow'); if (mr) { setTab('counter'); doLookup(mr.dataset.phone); window.scrollTo(0, 0); return; }
-    const chp = e.target.closest('.chip[data-f]'); if (chp) { S.mFilter = chp.dataset.f; $('copyFallback').hidden = true; renderMembers(); return; }
+    const chp = e.target.closest('.chip[data-f]'); if (chp) { S.mFilter = chp.dataset.f; renderMembers(); return; }
     const rp = e.target.closest('.chip[data-rp]'); if (rp) { S.rPeriod = rp.dataset.rp; loadReport(); return; }
     const sb = e.target.closest('[data-staff]'); if (sb) { setStaffRole(sb.dataset.staff, sb.dataset.role, sb); }
   });
